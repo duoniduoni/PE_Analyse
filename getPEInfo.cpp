@@ -123,7 +123,11 @@ int main(int argc, char * argv[])
    printf("file [%s] Section :\n", argv[1]);
    for(i = 0; i < pNtHeader->FileHeader.NumberOfSections; i++)
    {
-      printf("\t%d %s \n", i, pSectionHeader[i].Name);
+      printf("\t%d %s [%p - %d]\n", i, 
+            pSectionHeader[i].Name,
+            pSectionHeader[i].VirtualAddress,
+            pSectionHeader[i].Misc.VirtualSize
+            );
    }
 
    }while(0);
