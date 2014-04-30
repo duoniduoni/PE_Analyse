@@ -62,8 +62,10 @@ void showImportTable(PIMAGE_DATA_DIRECTORY pImportTable,
      fileOffset = RVAToOffset(pImportDescriptor[i].Name, pSectionHeader, numOfSection);
      printf("\timport Dll name [%s]\n", (char *)pMappedAddress + fileOffset);
 
+     //解析桥1
      fileOffset = RVAToOffset(pImportDescriptor[i].OriginalFirstThunk, pSectionHeader, numOfSection);
      PIMAGE_THUNK_DATA pThunkData = (PIMAGE_THUNK_DATA)((char *)pMappedAddress + fileOffset); 
+     printf("\t\tfirst bridge [%p]:\n", pThunkData);
      for(int j = 0; ; j++)
      {
         if(pThunkData[j].u1.Ordinal == 0)
@@ -79,6 +81,26 @@ void showImportTable(PIMAGE_DATA_DIRECTORY pImportTable,
         PIMAGE_IMPORT_BY_NAME pImportByName = (PIMAGE_IMPORT_BY_NAME)((char *)pMappedAddress + fileOffset); 
         printf("\t\t%p %s\n", pImportByName->Hint, pImportByName->Name);
      }
+
+     //解析桥2
+     fileOffset = RVAToOffset(pImportDescriptor[i].FirstThunk, pSectionHeader, numOfSection);
+     pThunkData = (PIMAGE_THUNK_DATA)((char *)pMappedAddress + fileOffset); 
+     printf("\n\t\tsecond bridge [%p]:\n", pThunkData);
+     for(j = 0; ; j++)
+     {
+        if(pThunkData[j].u1.Ordinal == 0)
+           break;
+
+        if(IMAGE_SNAP_BY_ORDINAL(pThunkData[j].u1.Ordinal))
+        {
+           printf("\t\t this thunk data high word is 1, do not know how to dispose !\n");
+           continue;
+        }
+
+        fileOffset = RVAToOffset(pThunkData[j].u1.Ordinal, pSectionHeader, numOfSection);
+        PIMAGE_IMPORT_BY_NAME pImportByName = (PIMAGE_IMPORT_BY_NAME)((char *)pMappedAddress + fileOffset); 
+        printf("\t\t%p %s\n", pImportByName->Hint, pImportByName->Name);
+     }     
   }
 }
 
